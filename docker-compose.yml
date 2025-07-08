@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: signup-flow-db
+    environment:
+      POSTGRES_DB: signup_flow_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - signup-flow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: signup-flow-api
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/signup_flow_db?schema=public
+      JWT_SECRET: your-super-secret-jwt-key-here-change-in-production
+      PORT: 3000
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - signup-flow-network
+    command: sh -c "yarn db:generate && yarn db:push && yarn start:prod"
+
+volumes:
+  postgres_data:
+
+networks:
+  signup-flow-network:
+    driver: bridge 
