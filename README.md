@@ -6,54 +6,80 @@ This project is a user registration and authentication API built with NestJS, Ty
 
 - User registration with validation and secure password storage
 - JWT-based authentication
-- Input data validation
+- Input data validation with comprehensive DTOs
 - Automatic API documentation with Swagger
 - PostgreSQL integration via Prisma ORM
 - Global error handling and centralized logging
 - Clean, scalable architecture (Repository Pattern, clear separation of concerns)
 - Ready for unit and integration testing
 - Docker support for easy deployment
+- Rate limiting and security headers
 
 ## Tech Stack
 
-- NestJS (TypeScript)
-- PostgreSQL
-- Prisma ORM
-- JWT and Passport
-- bcryptjs for password hashing
-- class-validator and class-transformer for validation
-- Swagger/OpenAPI for documentation
-- Jest for testing
-- Docker and docker-compose
+- **Backend Framework:** NestJS (TypeScript)
+- **Database:** PostgreSQL
+- **ORM:** Prisma
+- **Authentication:** JWT and Passport
+- **Password Hashing:** bcryptjs
+- **Validation:** class-validator and class-transformer
+- **Documentation:** Swagger/OpenAPI
+- **Testing:** Jest
+- **Containerization:** Docker and docker-compose
+- **Security:** Helmet, Throttler
 
 ## Project Structure
 
 ```
-src/
-├── app.module.ts
-├── main.ts
-├── commons/
-│   ├── dtos/
-│   ├── exceptions/
-│   ├── guards/
-│   └── interfaces/
-├── infrastructure/
-│   ├── error.filter.ts
-│   ├── logger.ts
-│   └── prisma.service.ts
-├── modules/
-│   ├── auth/
-│   │   ├── auth.controller.ts
-│   │   ├── auth.module.ts
-│   │   ├── auth.service.ts
-│   │   └── jwt.strategy.ts
-│   └── health/
-│       ├── health.controller.ts
-│       └── health.module.ts
-├── repositories/
-│   ├── user-repository.interface.ts
-│   ├── user.repository.ts
-│   
+auth-api/
+├── src/
+│   ├── app.module.ts              # Main application module
+│   ├── main.ts                    # Application entry point
+│   ├── commons/                   # Shared utilities and common code
+│   │   ├── constants/             # Application constants
+│   │   ├── decorators/            # Custom decorators
+│   │   │   └── api-docs.decorator.ts
+│   │   ├── dtos/                  # Data Transfer Objects
+│   │   │   ├── auth.dto.ts        # Authentication DTOs
+│   │   │   ├── login.dto.ts       # Login request DTO
+│   │   │   └── signup.dto.ts      # Signup request DTO
+│   │   ├── guards/                # Authentication guards
+│   │   │   └── jwt-auth.guard.ts
+│   │   └── interfaces/            # TypeScript interfaces
+│   │       ├── auth.interface.ts
+│   │       └── user.interface.ts
+│   ├── infrastructure/            # Infrastructure layer
+│   │   ├── error.filter.ts        # Global error handling
+│   │   ├── logger.ts              # Centralized logging
+│   │   └── prisma.service.ts      # Database service
+│   ├── modules/                   # Feature modules
+│   │   ├── auth/                  # Authentication module
+│   │   │   ├── auth.controller.ts # Auth endpoints
+│   │   │   ├── auth.module.ts     # Auth module definition
+│   │   │   ├── auth.service.ts    # Auth business logic
+│   │   │   └── jwt.strategy.ts    # JWT strategy
+│   │   └── health/                # Health check module
+│   │       ├── health.controller.ts
+│   │       └── health.module.ts
+│   └── repositories/              # Data access layer
+│       ├── user-repository.interface.ts
+│       └── user.repository.ts
+├── prisma/                        # Database schema and migrations
+│   ├── migrations/
+│   └── schema.prisma
+├── test/                          # Test files
+│   ├── app.e2e-spec.ts
+│   └── jest-e2e.json
+├── docs/                          # Documentation
+│   └── repository-pattern.md
+├── frontend/                      # Frontend application
+│   └── public/
+│       └── index.html
+├── docker-compose.yml             # Docker services configuration
+├── Dockerfile                     # Application container
+├── package.json                   # Dependencies and scripts
+├── tsconfig.json                  # TypeScript configuration
+└── README.md                      # This file
 ```
 
 ## Getting Started
@@ -188,7 +214,7 @@ Content-Type: application/json
 }
 ```
 
-## Security
+## Security Features
 
 - **HTTP headers protection:** The API uses Helmet middleware to automatically set secure HTTP headers, protecting against common web vulnerabilities such as XSS, clickjacking, and others. This is applied globally to all routes.
 - **Rate limiting:** The backend uses NestJS Throttler to limit each IP address to 10 requests per 60 seconds. This is configured via the `throttlers` array in `ThrottlerModule`:
@@ -204,10 +230,11 @@ Content-Type: application/json
   })
   ```
   If a client exceeds this limit, the API responds with a `429 Too Many Requests` error. This helps prevent brute-force attacks and abuse of authentication endpoints.
-- **Input data validation:** All incoming data is validated using class-validator and class-transformer.
+- **Input data validation:** All incoming data is validated using class-validator and class-transformer with comprehensive DTOs.
 - **JWT authentication:** All protected endpoints require a valid JWT token.
 - **CORS:** Cross-Origin Resource Sharing is enabled and configured.
 - **SQL injection protection:** Prisma ORM is used for all database access, which prevents SQL injection attacks.
+- **Password hashing:** Passwords are securely hashed using bcryptjs before storage.
 
 ### Password Requirements
 
@@ -226,6 +253,15 @@ yarn test         # Unit tests
 yarn test:cov     # Coverage
 yarn test:e2e     # End-to-end
 yarn test:watch   # Watch mode
+```
+
+## Database Management
+
+```bash
+yarn db:generate  # Generate Prisma client
+yarn db:push      # Push schema changes to database
+yarn db:migrate   # Create and apply migrations
+yarn db:studio    # Open Prisma Studio for database management
 ```
 
 ## Configuration
@@ -270,10 +306,23 @@ Includes:
 
 ## Architecture and Best Practices
 
-- Repository Pattern to decouple business logic and data access
-- Global error handling and logging
-- Clear separation of layers and responsibilities
-- Code ready for testing and scalability
+- **Repository Pattern:** Decouples business logic and data access
+- **Global error handling and logging:** Centralized error management
+- **Clear separation of layers:** Controllers, Services, Repositories
+- **DTOs for validation:** Comprehensive input validation
+- **Interface-driven design:** TypeScript interfaces for type safety
+- **Modular structure:** Feature-based module organization
+- **Code ready for testing and scalability**
+
+## Development Scripts
+
+```bash
+yarn start:dev      # Start development server with hot reload
+yarn start:debug    # Start with debug mode
+yarn build          # Build for production
+yarn lint           # Run ESLint
+yarn format         # Format code with Prettier
+```
 
 ## License
 
