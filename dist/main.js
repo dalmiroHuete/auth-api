@@ -11,7 +11,8 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
         origin: [
-            'http://signup-flow-frontend.s3-website-us-east-1.amazonaws.com'
+            'http://localhost:3000',
+            'http://localhost:3002',
         ],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: [
