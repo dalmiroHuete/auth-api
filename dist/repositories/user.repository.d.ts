@@ -1,6 +1,6 @@
 import { PrismaService } from '../infrastructure/prisma.service';
 import { User } from '../commons/interfaces/user.interface';
-import { IUserRepository } from '../repositories/user.repository.interface';
+import { IUserRepository } from './user-repository.interface';
 export declare class UserRepository implements IUserRepository {
     private prisma;
     constructor(prisma: PrismaService);

@@ -1,5 +1,4 @@
 import {Controller, Get, Logger, UseGuards} from '@nestjs/common';
-import { JwtAuthGuard } from "../../commons/guards/jwt-auth.guard";
 
 @Controller('health')
 export class HealthController {
@@ -7,14 +6,14 @@ export class HealthController {
 
   constructor() {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('users')
+
+  @Get('healthy')
   async getsSecureHealth() {
-    this.logger.log(`Calling GET endpoint to validate secure health`);
+    this.logger.log(`Calling GET endpoint to validate health`);
 
     return {
       success: true,
-      message: 'Successfully GET health secure call',
+      message: 'Successfully GET health call',
     };
   }
 }

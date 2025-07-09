@@ -12,6 +12,8 @@ const config_1 = require("@nestjs/config");
 const health_module_1 = require("./modules/health/health.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const prisma_service_1 = require("./infrastructure/prisma.service");
+const throttler_1 = require("@nestjs/throttler");
+const core_1 = require("@nestjs/core");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -21,11 +23,24 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
             }),
+            throttler_1.ThrottlerModule.forRoot({
+                throttlers: [
+                    {
+                        ttl: 60,
+                        limit: 10,
+                    },
+                ],
+            }),
             auth_module_1.AuthModule,
             health_module_1.HealthModule,
         ],
-        controllers: [],
-        providers: [prisma_service_1.PrismaService],
+        providers: [
+            prisma_service_1.PrismaService,
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_1.ThrottlerGuard,
+            },
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

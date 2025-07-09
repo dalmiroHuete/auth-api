@@ -4,12 +4,15 @@ const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
+const error_filter_1 = require("./infrastructure/error.filter");
+const logger_1 = require("./infrastructure/logger");
+const helmet_1 = require("helmet");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
         origin: [
-            process.env.FRONTEND_URL,
-        ].filter(Boolean),
+            'http://signup-flow-frontend.s3-website-us-east-1.amazonaws.com'
+        ],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: [
             'Origin',
@@ -20,14 +23,19 @@ async function bootstrap() {
         ],
         credentials: true,
     });
+    app.use((0, helmet_1.default)({
+        crossOriginEmbedderPolicy: false,
+        contentSecurityPolicy: false,
+    }));
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
         transform: true,
     }));
+    app.useGlobalFilters(new error_filter_1.GlobalErrorFilter());
     const config = new swagger_1.DocumentBuilder()
         .setTitle('Sign-Up Flow API')
-        .setDescription('A complete sign-up flow API with authentication')
+        .setDescription('API for user registration and authentication')
         .setVersion('1.0')
         .addBearerAuth()
         .build();
@@ -35,8 +43,7 @@ async function bootstrap() {
     swagger_1.SwaggerModule.setup('api', app, document);
     const port = process.env.PORT || 3000;
     await app.listen(port);
-    console.log(`Application is running on: http://localhost:${port}`);
-    console.log(`Swagger documentation: http://localhost:${port}/api`);
+    logger_1.Logger.log(`Server running on http://localhost:${port}`, 'Bootstrap');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

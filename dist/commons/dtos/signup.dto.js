@@ -57,7 +57,7 @@ __decorate([
     (0, class_validator_1.MinLength)(8),
     (0, class_validator_1.MaxLength)(128),
     (0, class_validator_1.Matches)(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-        message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+        message: 'password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
     }),
     __metadata("design:type", String)
 ], SignUpDto.prototype, "password", void 0);

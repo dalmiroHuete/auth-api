@@ -16,68 +16,103 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcryptjs");
-const user_repository_interface_1 = require("../../repositories/user.repository.interface");
+const user_repository_interface_1 = require("../../repositories/user-repository.interface");
+const logger_1 = require("../../infrastructure/logger");
 let AuthService = class AuthService {
     constructor(jwtService, userRepository) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
     }
     async signUp(signUpDto) {
-        const { email, password, firstName, lastName } = signUpDto;
-        const existingUser = await this.userRepository.findByEmail(email);
-        if (existingUser) {
-            throw new common_1.ConflictException('User with this email already exists');
+        try {
+            const { email, password, firstName, lastName } = signUpDto;
+            logger_1.Logger.log(`Attempting to register user: ${email}`, 'AuthService');
+            if (!email || !password || !firstName || !lastName) {
+                logger_1.Logger.warn('Missing required fields for sign up', 'AuthService');
+                throw new common_1.BadRequestException('All fields are required');
+            }
+            const existingUser = await this.userRepository.findByEmail(email);
+            if (existingUser) {
+                logger_1.Logger.warn(`User with email ${email} already exists`, 'AuthService');
+                throw new common_1.ConflictException('User with this email already exists');
+            }
+            const hashedPassword = await bcrypt.hash(password, 12);
+            const user = await this.userRepository.create({
+                email,
+                firstName,
+                lastName,
+                password: hashedPassword,
+            });
+            logger_1.Logger.log(`User registered successfully: ${email}`, 'AuthService');
+            return {
+                message: 'User registered successfully',
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                },
+            };
         }
-        const hashedPassword = await bcrypt.hash(password, 12);
-        const user = await this.userRepository.create({
-            email,
-            firstName,
-            lastName,
-            password: hashedPassword,
-        });
-        return {
-            message: 'User registered successfully',
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-            },
-        };
+        catch (error) {
+            logger_1.Logger.error('Error in signUp', error.stack, 'AuthService');
+            throw error;
+        }
     }
     async login(loginDto) {
-        const { email, password } = loginDto;
-        const user = await this.userRepository.findByEmail(email);
-        if (!user) {
-            throw new common_1.UnauthorizedException('Invalid credentials');
-        }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            throw new common_1.UnauthorizedException('Invalid credentials');
-        }
-        const payload = {
-            sub: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-        };
-        return {
-            access_token: this.jwtService.sign(payload),
-            user: {
-                id: user.id,
+        try {
+            const { email, password } = loginDto;
+            logger_1.Logger.log(`Attempting login for user: ${email}`, 'AuthService');
+            if (!email || !password) {
+                logger_1.Logger.warn('Missing email or password for login', 'AuthService');
+                throw new common_1.BadRequestException('Email and password are required');
+            }
+            const user = await this.userRepository.findByEmail(email);
+            if (!user) {
+                logger_1.Logger.warn(`User with email ${email} not found`, 'AuthService');
+                throw new common_1.UnauthorizedException('Invalid credentials');
+            }
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (!isPasswordValid) {
+                logger_1.Logger.warn(`Invalid password for user: ${email}`, 'AuthService');
+                throw new common_1.UnauthorizedException('Invalid credentials');
+            }
+            const payload = {
+                sub: user.id,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
-            },
-        };
+            };
+            logger_1.Logger.log(`User logged in successfully: ${email}`, 'AuthService');
+            return {
+                access_token: this.jwtService.sign(payload),
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                },
+            };
+        }
+        catch (error) {
+            logger_1.Logger.error('Error in login', error.stack, 'AuthService');
+            throw error;
+        }
     }
     async validateUser(userId) {
-        const user = await this.userRepository.findById(userId);
-        if (user) {
-            const { password, ...result } = user;
-            return result;
+        try {
+            logger_1.Logger.debug(`Validating user by id: ${userId}`, 'AuthService');
+            const user = await this.userRepository.findById(userId);
+            if (user) {
+                const { password, ...result } = user;
+                return result;
+            }
+            return null;
         }
-        return null;
+        catch (error) {
+            logger_1.Logger.error('Error in validateUser', error.stack, 'AuthService');
+            throw error;
+        }
     }
 };
 exports.AuthService = AuthService;

@@ -12,23 +12,21 @@ var HealthController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthController = void 0;
 const common_1 = require("@nestjs/common");
-const jwt_auth_guard_1 = require("../../commons/guards/jwt-auth.guard");
 let HealthController = HealthController_1 = class HealthController {
     constructor() {
         this.logger = new common_1.Logger(HealthController_1.name);
     }
     async getsSecureHealth() {
-        this.logger.log(`Calling GET endpoint to validate secure health`);
+        this.logger.log(`Calling GET endpoint to validate health`);
         return {
             success: true,
-            message: 'Successfully GET health secure call',
+            message: 'Successfully GET health call',
         };
     }
 };
 exports.HealthController = HealthController;
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('users'),
+    (0, common_1.Get)('healthy'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

@@ -16,7 +16,7 @@ const jwt_strategy_1 = require("./jwt.strategy");
 const config_1 = require("@nestjs/config");
 const user_repository_1 = require("../../repositories/user.repository");
 const prisma_service_1 = require("../../infrastructure/prisma.service");
-const user_repository_interface_1 = require("../../repositories/user.repository.interface");
+const user_repository_interface_1 = require("../../repositories/user-repository.interface");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
